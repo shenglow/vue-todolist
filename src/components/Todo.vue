@@ -1,7 +1,11 @@
 <template>
-    <section>
-        <h1>todos</h1>
-        <input type="text" autofocus v-model="newTodo" @keyup.enter="addTodo"/>
+    <section class="todoapp">
+        <header class="header">
+            <h1>todos</h1>
+        </header>
+        <section class="main">
+            <input type="text" autofocus v-model="newTodo" @keyup.enter="addTodo" placeholder="What needs to be done?"/>
+        </section>
     </section>
 </template>
 
@@ -15,21 +19,24 @@ export default {
     },
     methods: {
         addTodo: function() {
-            console.log(this.newTodo);
+            alert(this.newTodo);
         }
     }
 }
 </script>
 
-<style scoped>
+<style>
+.todoapp h1 {
+    width: 100%;
+    font-size: 100px;
+    font-weight: 100;
+    text-align: center;
+    color: rgba(175, 47, 47, 0.15);
+}
 section {
     width: 100%;
     max-width: 500px;
     margin: auto;
     text-align:center;
-}
-
-h1 {
-    color: red;
 }
 </style>
