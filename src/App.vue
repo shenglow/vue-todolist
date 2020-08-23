@@ -21,6 +21,10 @@ body {
     background: #f5f5f5;
 }
 
+input::placeholder {
+    color: #e6e6e6;
+}
+
 h1 {
     margin: 0.5rem 0;
 }
