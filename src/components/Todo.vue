@@ -17,6 +17,7 @@
                     <div class="view">
                         <input type="checkbox" class="toggle" v-model="todo.completed">
                         <label for="">{{ todo.title }}</label>
+                        <button class="delete" @click="removeTodo(todo)"></button>
                     </div>
                 </li>
             </ul>
@@ -28,7 +29,12 @@
 const STORAGEKEY = 'todo_storage';
 const todoStorage = {
     fetch: () => {
-        return JSON.parse(localStorage.getItem(STORAGEKEY)) || [];
+        const todos = JSON.parse(localStorage.getItem(STORAGEKEY)) || [];
+        todos.forEach(function(todo, index) {
+            todo.id = index;
+        });
+        todoStorage.uid = todos.length;
+        return todos;
     },
     save: (todos) => {
         localStorage.setItem(STORAGEKEY, JSON.stringify(todos));
@@ -62,6 +68,9 @@ export default {
                 completed: false
             });
             this.newTodo = "";
+        },
+        removeTodo: function (todo) {
+            this.todos.splice(this.todos.indexOf(todo), 1);
         }
     },
     computed: {
@@ -138,6 +147,33 @@ export default {
 
                 &.completed label {
                     text-decoration: line-through;
+                }
+
+                .delete {
+                    display: none;
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                    right: 10px;
+                    margin: auto 0;
+                    width: 40px;
+                    height: 40px;
+                    border: none;
+                    color: #cc9a9a;
+                    background: none;
+                    font-size: 30px;
+
+                    &:focus {
+                        outline: none;
+                    }
+
+                    &:after {
+                        content: 'x';
+                    }
+                }
+
+                &:hover .delete {
+                    display: block;
                 }
             }
         }
