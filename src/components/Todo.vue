@@ -15,7 +15,7 @@
                 placeholder="What needs to be done?"
             />
             <ul class="todo-list">
-                <li v-for="todo in filteredTodo" :key="todo.id" :class="{ completed: todo.completed }">
+                <li v-for="todo in filteredTodos" :key="todo.id" :class="{ completed: todo.completed }">
                     <div class="view">
                         <input type="checkbox" class="toggle" v-model="todo.completed">
                         <label for="">{{ todo.title }}</label>
@@ -24,8 +24,22 @@
                 </li>
             </ul>
         </section>
-        <footer v-show="todos.length">
-            test
+        <footer class="footer" v-show="todos.length">
+            <span class="todo-count">
+                <strong>{{ remaining }}</strong> {{ remaining | pluralize }} left
+            </span>
+            <ul class="filters">
+                <li>
+                    <a href="#/all" :class="{ seleted: visibility == 'all' }">All</a>
+                </li>
+                <li>
+                    <a href="#/active" :class="{ seleted: visibility == 'active' }">Active</a>
+                </li>
+                <li>
+                    <a href="#/completed" :class="{ seleted: visibility == 'completed' }">Completed</a>
+                </li>
+            </ul>
+            <button class="clear-completed" @click="removeCompleted" v-show="todos.length > remaining">Clear completed</button>
         </footer>
     </section>
 </template>
@@ -67,8 +81,13 @@ export default {
     data: function() {
         return {
             todos: todoStorage.fetch(),
-            newTodo: ''
+            newTodo: '',
+            visibility: 'all'
         }
+    },
+    mounted: function () {
+        window.addEventListener("hashchange", this.onHashChange);
+        this.onHashChange();
     },
     watch: {
         todos: {
@@ -92,11 +111,23 @@ export default {
         },
         removeTodo: function (todo) {
             this.todos.splice(this.todos.indexOf(todo), 1);
+        },
+        onHashChange: function () {
+            var visibility = window.location.hash.replace(/#\/?/, "");
+            if (filters[visibility]) {
+                this.visibility = visibility;
+            } else {
+                window.location.hash = "";
+                this.visibility = "all";
+            }
+        },
+        removeCompleted: function () {
+            this.todos = filters.active(this.todos);
         }
     },
     computed: {
-        filteredTodo: function() {
-            return this.todos;
+        filteredTodos: function() {
+            return filters[this.visibility](this.todos);
         },
         remaining: function() {
             return filters.active(this.todos).length;
@@ -110,6 +141,11 @@ export default {
                     todo.completed = value;
                 });
             }
+        }
+    },
+    filters: {
+        pluralize: function(n) {
+            return n === 1 ? "item" : "items";
         }
     }
 }
@@ -126,7 +162,7 @@ export default {
     }
 
     .main {
-        box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 25px 50px 0 rgba(0, 0, 0, 0.1);
+        box-shadow: 2px 0px 4px 0px rgba(0, 0, 0, 0.2), -2px 0px 4px 0px rgba(0, 0, 0, 0.2);
         background: #fff;
         position: relative;
 
@@ -170,6 +206,7 @@ export default {
             margin: 0;
             padding: 0;
             list-style: none;
+            border-top: 1px solid #ededed;
 
             li {
                 position: relative;
@@ -235,6 +272,72 @@ export default {
                 &:hover .delete {
                     display: block;
                 }
+            }
+        }
+    }
+
+    .footer {
+        padding: 10px 15px;
+        background: #fff;
+        color: #777;
+        height: 20px;
+        box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, 0.2), -2px 2px 4px 0px rgba(0, 0, 0, 0.2);
+        position: relative;
+
+        &::before {
+            content: '';
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            height: 50px;
+            overflow: hidden;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2), 0 8px 0 -3px #f6f6f6, 0 9px 1px -3px rgba(0, 0, 0, 0.2), 0 16px 0 -6px #f6f6f6, 0 17px 2px -6px rgba(0, 0, 0, 0.2);
+        }
+
+        .todo-count {
+            float: left;
+
+            strong {
+                font-weight: 300;
+            }
+        }
+
+        .filters {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            position: absolute;
+            right: 0;
+            left: 0;
+
+            li {
+                display: inline;
+
+                a {
+                    color: inherit;
+                    margin: 3px;
+                    padding: 3px 7px;
+                    text-decoration: none;
+                    border: 1px solid transparent;
+                    border-radius: 3px;
+
+                    &:hover,
+                    &.seleted {
+                        border-color: rgba(175, 47, 47, 0.2);
+                    }
+                }
+            }
+        }
+
+        .clear-completed {
+            float: right;
+            text-decoration: none;
+            cursor: pointer;
+            position: relative;
+
+            &:hover {
+                text-decoration: underline !important;
             }
         }
     }

@@ -25,7 +25,19 @@ input::placeholder {
     color: #e6e6e6;
 }
 
+input:focus {
+    outline: none;
+}
+
 h1 {
     margin: 0.5rem 0;
+}
+
+button {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
 }
 </style>
