@@ -4,6 +4,8 @@
             <h1>todos</h1>
         </header>
         <section class="main">
+            <input type="checkbox" id="toggle-all" class="toggle-all" v-model="allDone" />
+            <label for="toggle-all" v-show="todos.length"></label>
             <input
                 type="text"
                 autofocus
@@ -22,6 +24,9 @@
                 </li>
             </ul>
         </section>
+        <footer v-show="todos.length">
+            test
+        </footer>
     </section>
 </template>
 
@@ -40,6 +45,22 @@ const todoStorage = {
         localStorage.setItem(STORAGEKEY, JSON.stringify(todos));
     }
 };
+
+const filters = {
+    all: (todos) => {
+        return todos;
+    },
+    active: (todos) => {
+        return todos.filter((todo) => {
+            return !todo.completed;
+        });
+    },
+    completed: (todos) => {
+        return todos.filter((todo) => {
+            return todo.completed;
+        });
+    }
+}
 
 export default {
     name: "Todo",
@@ -76,6 +97,19 @@ export default {
     computed: {
         filteredTodo: function() {
             return this.todos;
+        },
+        remaining: function() {
+            return filters.active(this.todos).length;
+        },
+        allDone: {
+            get: function () {
+                return this.remaining === 0;
+            },
+            set: function (value) {
+                return this.todos.forEach((todo) => {
+                    todo.completed = value;
+                });
+            }
         }
     }
 }
@@ -94,9 +128,35 @@ export default {
     .main {
         box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 25px 50px 0 rgba(0, 0, 0, 0.1);
         background: #fff;
+        position: relative;
+
+        .toggle-all {
+            position: absolute;
+            opacity: 0;
+
+            & + label {
+                position: absolute;
+                transform: rotate(90deg);
+                height: 30px;
+                width: 30px;
+                left: 5px;
+                top: 10px;
+                color: #e6e6e6;
+
+                &::after {
+                    content: '❯';
+                    font-size: 24px;
+                    color: inherit;
+                }
+            }
+
+            &:checked + label {
+                color: #737373;
+            }
+        }
 
         .new-todo {
-            padding: 16px;
+            padding: 15px 15px 15px 60px;
             width: 100%;
             border: none;
             box-sizing: border-box;
