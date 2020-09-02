@@ -15,12 +15,13 @@
                 placeholder="What needs to be done?"
             />
             <ul class="todo-list">
-                <li v-for="todo in filteredTodos" :key="todo.id" :class="{ completed: todo.completed }">
+                <li v-for="todo in filteredTodos" :key="todo.id" :class="{ completed: todo.completed, editing: todo == editedTodo }">
                     <div class="view">
                         <input type="checkbox" class="toggle" v-model="todo.completed">
-                        <label for="">{{ todo.title }}</label>
+                        <label @dblclick="editTodo(todo)">{{ todo.title }}</label>
                         <button class="delete" @click="removeTodo(todo)"></button>
                     </div>
+                    <input type="text" class="edit" v-model="todo.title" v-todo-focus="todo == editedTodo" @blur="doneEdit(todo)" @keyup.enter="doneEdit(todo)" @keyup.esc="cancelEdit(todo)">
                 </li>
             </ul>
         </section>
@@ -82,6 +83,7 @@ export default {
         return {
             todos: todoStorage.fetch(),
             newTodo: '',
+            editedTodo: null,
             visibility: 'all'
         }
     },
@@ -108,6 +110,21 @@ export default {
                 completed: false
             });
             this.newTodo = "";
+        },
+        editTodo: function(todo) {
+            this.beforeEditCache = todo.title;
+            this.editedTodo = todo;
+        },
+        doneEdit: function(todo) {
+            if (!this.editedTodo) return;
+            
+            this.editedTodo = null;
+            todo.title = todo.title.trim();
+            if (!todo.title) this.removeTodo(todo);
+        },
+        cancelEdit: function(todo) {
+            this.editedTodo = null;
+            todo.title = this.beforeEditCache;
         },
         removeTodo: function (todo) {
             this.todos.splice(this.todos.indexOf(todo), 1);
@@ -147,12 +164,22 @@ export default {
         pluralize: function(n) {
             return n === 1 ? "item" : "items";
         }
+    },
+    directives: {
+        "todo-focus": function(el, binding) {
+            if (binding.value) el.focus();
+        }
     }
 }
 </script>
 
 <style lang="scss">
 .todoapp {
+    width: 100%;
+    max-width: 500px;
+    margin: auto;
+    text-align:center;
+
     .header h1 {
         width: 100%;
         font-size: 100px;
@@ -244,6 +271,32 @@ export default {
 
                 &.completed label {
                     text-decoration: line-through;
+                }
+
+                .edit {
+                    display: none;
+                    position: relative;
+                    margin: 0;
+                    font-size: 24px;
+                    line-height: 1.4em;
+                    border: 0;
+                    padding: 6px;
+                    border: 1px solid #999;
+                    box-shadow: inset 0 -1px 5px 0 rgba(0, 0, 0, 0.2);
+                    box-sizing: border-box;
+                    padding: 12px 16px;
+                    width: calc(100% - 43px);
+                    margin-left: 43px;
+                }
+
+                &.editing {
+                    .view {
+                        display: none;
+                    }
+
+                    .edit {
+                        display: block;
+                    }
                 }
 
                 .delete {
@@ -341,11 +394,5 @@ export default {
             }
         }
     }
-}
-section {
-    width: 100%;
-    max-width: 500px;
-    margin: auto;
-    text-align:center;
 }
 </style>
